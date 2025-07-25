@@ -1,1 +1,0 @@
-(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[732],{8228:function(n,u,_){(window.__NEXT_P=window.__NEXT_P||[]).push(["/cliente",function(){return _(1e3)}])},1e3:function(n,u,_){"use strict";_.r(u)}},function(n){n.O(0,[888,774,179],function(){return n(n.s=8228)}),_N_E=n.O()}]);

@@ -1,42 +1,40 @@
+// Banco de dados SQLite
+datasource db {
+  provider = "sqlite"
+  url      = "file:./brydom-bank.db"
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
-}
-
 model Usuario {
-  id        Int    @id @default(autoincrement())
-  cpf       String @unique
+  id        Int          @id @default(autoincrement())
+  nome      String
+  cpf       String       @unique
   senha     String
-  tipo      String @default("cliente") // "cliente" ou "mestre"
-  saldo     Float  @default(0)
-  lucroHoje Float  @default(0)
-
+  saldo     Float        @default(0)
   bots      Bot[]
-  historico Operacao[]
+  transacoes Transacao[]
+  criadoEm  DateTime     @default(now())
 }
 
 model Bot {
-  id         Int     @id @default(autoincrement())
-  usuarioId  Int
-  ativo      Boolean @default(false)
-  metaBatida Boolean @default(false)
-  saldoBot   Float   @default(0)
+  id               Int       @id @default(autoincrement())
+  usuarioId        Int
+  saldoOperacional Float
+  status           String    @default("ativo")
+  criadoEm         DateTime  @default(now())
 
-  usuario  Usuario    @relation(fields: [usuarioId], references: [id])
-  Operacao Operacao[]
+  usuario          Usuario   @relation(fields: [usuarioId], references: [id])
 }
 
-model Operacao {
-  id        Int      @id @default(autoincrement())
-  usuarioId Int
-  botId     Int?
-  valor     Float
-  data      DateTime @default(now())
+model Transacao {
+  id         Int       @id @default(autoincrement())
+  usuarioId  Int
+  tipo       String    // "depósito", "saque"
+  valor      Float
+  data       DateTime  @default(now())
 
-  usuario Usuario @relation(fields: [usuarioId], references: [id])
-  bot     Bot?    @relation(fields: [botId], references: [id])
+  usuario    Usuario   @relation(fields: [usuarioId], references: [id])
 }
