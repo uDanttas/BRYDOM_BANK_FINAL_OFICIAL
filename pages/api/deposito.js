@@ -1,33 +1,27 @@
-import prisma from "../../lib/prisma";
+const prisma = require('../../lib/prisma');
 
 export default async function handler(req, res) {
-  if (req.method === "POST") {
-    try {
-      const { userId, valor } = req.body;
+  if (req.method !== 'POST') return res.status(405).json({ erro: 'Método não permitido' });
 
-      if (!userId || !valor || valor <= 0) {
-        return res.status(400).json({ error: "Dados inválidos para depósito." });
-      }
+  const { cpf, valor } = req.body;
+  if (!cpf || !valor) return res.status(400).json({ erro: 'CPF e valor são obrigatórios' });
 
-      const usuario = await prisma.usuario.update({
-        where: { id: parseInt(userId) },
-        data: { saldo: { increment: parseFloat(valor) } },
-      });
+  try {
+    const usuario = await prisma.usuario.findUnique({ where: { cpf } });
+    if (!usuario) return res.status(404).json({ erro: 'Usuário não encontrado' });
 
-      await prisma.transacao.create({
-        data: {
-          usuarioId: parseInt(userId),
-          tipo: "depósito",
-          valor: parseFloat(valor),
-        },
-      });
+    await prisma.usuario.update({
+      where: { cpf },
+      data: { saldo: usuario.saldo + valor },
+    });
 
-      return res.status(200).json({ message: "Depósito realizado com sucesso!", saldo: usuario.saldo });
-    } catch (error) {
-      console.error("Erro deposito:", error);
-      return res.status(500).json({ error: "Erro interno ao depositar." });
-    }
-  } else {
-    return res.status(405).json({ error: "Método não permitido" });
+    await prisma.historico.create({
+      data: { usuarioCpf: cpf, tipo: 'deposito', valor },
+    });
+
+    return res.status(200).json({ mensagem: 'Depósito realizado com sucesso' });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ erro: 'Erro interno' });
   }
 }

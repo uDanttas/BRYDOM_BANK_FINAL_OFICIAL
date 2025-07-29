@@ -1,19 +1,8 @@
-// Dentro do bloco do Mestre
-<div style={{ marginTop: "15px", display: "flex", gap: "10px", justifyContent: "center" }}>
-  <button onClick={() => window.location.href = "/saque"}>Saque</button>
-  <button onClick={() => window.location.href = "/deposito"}>Depósito</button>
-  <button
-    onClick={() => window.location.href = "/bhacanna"}
-    style={{
-      background: "#00ffcc",
-      color: "#111",
-      padding: "10px 20px",
-      borderRadius: "8px",
-      border: "none",
-      cursor: "pointer",
-      fontWeight: "bold",
-    }}
-  >
-    Ver Bhacanna
-  </button>
-</div>
+export default function Mestre() {
+  return (
+    <main style={{ padding: "20px", background: "#1a1a1a", color: "#fff", fontFamily: "Arial, sans-serif" }}>
+      <h1>Painel do Mestre</h1>
+      <p>Controle de lucros dos bots Bhacanna e clientes.</p>
+    </main>
+  );
+}

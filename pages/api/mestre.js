@@ -1,18 +1,30 @@
-export default async function handler(req, res) {
-  try {
-    // Dados simulados (vamos integrar ao Prisma depois)
-    const lucroTotal = 150000; // soma de todos os lucros
-    const metaDia = 2200;      // número de bots que bateram R$500 hoje
-    const metaSemana = 18000;  // bots que bateram meta na semana
+const prisma = require('../../lib/prisma');
 
-    res.status(200).json({
-      lucroTotal,
+export default async function handler(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ erro: 'Método não permitido' });
+
+  try {
+    const mestre = await prisma.usuario.findUnique({
+      where: { cpf: '00000000000' },
+      include: { historico: true },
+    });
+
+    if (!mestre) return res.status(404).json({ erro: 'Mestre não encontrado' });
+
+    const metaDia = 500;
+    const metaSemana = 3500;
+
+    return res.status(200).json({
+      saldo: mestre.saldo,
       metaDia,
       metaSemana,
-      totalBots: 3000,
+      historicoMetas: mestre.historico.map((h) => ({
+        dia: new Date(h.data).toLocaleDateString('pt-BR'),
+        valor: h.valor,
+      })),
     });
-  } catch (error) {
-    console.error("Erro no painel do mestre:", error);
-    res.status(500).json({ error: "Erro ao carregar dados do mestre." });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ erro: 'Erro interno' });
   }
 }

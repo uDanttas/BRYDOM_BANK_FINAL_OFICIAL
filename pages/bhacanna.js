@@ -1,29 +1,8 @@
-import Header from "../components/Header";
-import { useEffect, useState } from "react";
-
 export default function Bhacanna() {
-  const [lucro, setLucro] = useState(0);
-
-  useEffect(() => {
-    fetch("/api/bhacanna")
-      .then((res) => res.json())
-      .then((data) => setLucro(data.lucroTotal || 0));
-  }, []);
-
   return (
-    <>
-      <Header />
-      <main style={{ maxWidth: "800px", margin: "20px auto" }}>
-        <div style={{
-          background: "#111",
-          padding: "20px",
-          borderRadius: "12px",
-          boxShadow: "0 0 20px rgba(0, 255, 204, 0.2)"
-        }}>
-          <h1>Bhacanna - Bots do Mestre</h1>
-          <p>Lucro acumulado: R${lucro.toFixed(2)}</p>
-        </div>
-      </main>
-    </>
+    <main style={{ padding: "20px", background: "#1a1a1a", color: "#fff", fontFamily: "Arial, sans-serif" }}>
+      <h1>Bots Bhacanna</h1>
+      <p>Os 3000 bots do mestre operando 24h.</p>
+    </main>
   );
 }

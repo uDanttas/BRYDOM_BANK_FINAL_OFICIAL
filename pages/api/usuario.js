@@ -1,28 +1,22 @@
-import prisma from '../../lib/prisma';
+const prisma = require('../../lib/prisma');
 
 export default async function handler(req, res) {
-  if (req.method === 'GET') {
-    try {
-      const usuarios = await prisma.usuario.findMany();
-      return res.status(200).json(usuarios);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Erro ao buscar usuários' });
-    }
-  }
+  if (req.method !== 'GET') return res.status(405).json({ erro: 'Método não permitido' });
 
-  if (req.method === 'POST') {
-    try {
-      const { cpf, senha } = req.body;
-      const novoUsuario = await prisma.usuario.create({
-        data: { cpf, senha },
-      });
-      return res.status(201).json(novoUsuario);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Erro ao criar usuário' });
-    }
-  }
+  try {
+    const { usuario } = req.headers;
+    if (!usuario) return res.status(400).json({ erro: 'Usuário não informado' });
 
-  return res.status(405).json({ error: 'Método não permitido' });
+    const { cpf } = JSON.parse(usuario);
+    const user = await prisma.usuario.findUnique({
+      where: { cpf },
+      include: { historico: true },
+    });
+
+    if (!user) return res.status(404).json({ erro: 'Usuário não encontrado' });
+    return res.status(200).json(user);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ erro: 'Erro interno' });
+  }
 }

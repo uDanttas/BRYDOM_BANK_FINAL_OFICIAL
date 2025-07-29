@@ -1,41 +1,28 @@
-import prisma from "../../lib/prisma";
+const prisma = require('../../lib/prisma');
 
 export default async function handler(req, res) {
-  if (req.method === "POST") {
-    try {
-      const { userId, valor } = req.body;
+  if (req.method !== 'POST') return res.status(405).json({ erro: 'Método não permitido' });
 
-      if (!userId || !valor || valor <= 0) {
-        return res.status(400).json({ error: "Dados inválidos para saque." });
-      }
+  const { cpf, valor } = req.body;
+  if (!cpf || !valor) return res.status(400).json({ erro: 'CPF e valor são obrigatórios' });
 
-      const usuario = await prisma.usuario.findUnique({
-        where: { id: parseInt(userId) },
-      });
+  try {
+    const usuario = await prisma.usuario.findUnique({ where: { cpf } });
+    if (!usuario) return res.status(404).json({ erro: 'Usuário não encontrado' });
+    if (usuario.saldo < valor) return res.status(400).json({ erro: 'Saldo insuficiente' });
 
-      if (!usuario || usuario.saldo < valor) {
-        return res.status(400).json({ error: "Saldo insuficiente." });
-      }
+    await prisma.usuario.update({
+      where: { cpf },
+      data: { saldo: usuario.saldo - valor },
+    });
 
-      await prisma.usuario.update({
-        where: { id: parseInt(userId) },
-        data: { saldo: { decrement: parseFloat(valor) } },
-      });
+    await prisma.historico.create({
+      data: { usuarioCpf: cpf, tipo: 'saque', valor: -valor },
+    });
 
-      await prisma.transacao.create({
-        data: {
-          usuarioId: parseInt(userId),
-          tipo: "saque",
-          valor: parseFloat(valor),
-        },
-      });
-
-      return res.status(200).json({ message: "Saque realizado com sucesso!" });
-    } catch (error) {
-      console.error("Erro saque:", error);
-      return res.status(500).json({ error: "Erro interno ao sacar." });
-    }
-  } else {
-    return res.status(405).json({ error: "Método não permitido" });
+    return res.status(200).json({ mensagem: 'Saque realizado com sucesso' });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ erro: 'Erro interno' });
   }
 }
