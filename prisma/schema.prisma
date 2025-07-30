@@ -4,23 +4,35 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./brydom-bank.db"
+  url      = "file:./dev.db"
 }
 
-model Usuario {
-  id        Int         @id @default(autoincrement())
-  cpf       String      @unique
-  senha     String
-  saldo     Float       @default(0)
-  tipo      String      @default("cliente")
-  historico Historico[]
+model usuario {
+  id     Int     @id @default(autoincrement())
+  cpf    String  @unique
+  nome   String
+  senha  String
+  saldo  Float
+  tipo   String    // Pode ser "mestre" ou "cliente"
+  bots   bot[]
 }
 
-model Historico {
-  id         Int      @id @default(autoincrement())
-  data       DateTime @default(now())
-  tipo       String
-  valor      Float
-  usuarioCpf String
-  usuario    Usuario  @relation(fields: [usuarioCpf], references: [cpf])
+model bot {
+  id             Int      @id @default(autoincrement())
+  nome           String
+  usuarioId      Int
+  ativo          Boolean  @default(true)
+  saldo_operacional Float
+  lucro_hoje     Float    @default(0)
+  atingiu_meta   Boolean  @default(false)
+  usuario        usuario  @relation(fields: [usuarioId], references: [id])
+  historico      historico_operacao[]
+}
+
+model historico_operacao {
+  id        Int    @id @default(autoincrement())
+  botId     Int
+  valor     Float
+  horario   DateTime @default(now())
+  bot       bot      @relation(fields: [botId], references: [id])
 }
