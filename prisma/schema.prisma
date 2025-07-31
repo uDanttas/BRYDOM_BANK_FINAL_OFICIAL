@@ -7,32 +7,41 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model usuario {
-  id     Int     @id @default(autoincrement())
-  cpf    String  @unique
-  nome   String
-  senha  String
-  saldo  Float
-  tipo   String    // Pode ser "mestre" ou "cliente"
-  bots   bot[]
+model Usuario {
+  id         Int                  @id @default(autoincrement())
+  cpf        String               @unique
+  senha      String
+  saldo      Float
+  bots       Bot[]
+  historicos HistoricoOperacao[]
+  criadoEm   DateTime             @default(now())
+  atualizadoEm DateTime           @updatedAt
 }
 
-model bot {
-  id             Int      @id @default(autoincrement())
-  nome           String
-  usuarioId      Int
-  ativo          Boolean  @default(true)
-  saldo_operacional Float
-  lucro_hoje     Float    @default(0)
-  atingiu_meta   Boolean  @default(false)
-  usuario        usuario  @relation(fields: [usuarioId], references: [id])
-  historico      historico_operacao[]
+model Mestre {
+  id         Int      @id @default(autoincrement())
+  nome       String
+  saldo      Float
+  criadoEm   DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
 }
 
-model historico_operacao {
-  id        Int    @id @default(autoincrement())
-  botId     Int
-  valor     Float
-  horario   DateTime @default(now())
-  bot       bot      @relation(fields: [botId], references: [id])
+model Bot {
+  id          Int      @id @default(autoincrement())
+  usuarioId   Int?
+  usuario     Usuario? @relation(fields: [usuarioId], references: [id])
+  ativo       Boolean  @default(true)
+  metaBatida  Boolean  @default(false)
+  lucroHoje   Float    @default(0)
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+}
+
+model HistoricoOperacao {
+  id         Int      @id @default(autoincrement())
+  usuarioId  Int
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+  descricao  String
+  valor      Float
+  data       DateTime @default(now())
 }
